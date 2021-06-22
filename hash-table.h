@@ -5,18 +5,28 @@
 #include <initializer_list>
 #include <stdexcept>
 
+
+/*
+Hash table.
+Using chain method.
+It doubles the table size if needed to expand.
+Check https://pastebin.com/esx8ckYw for more.
+*/
+
+
 template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class HashMap {
-public:
+  public:
     typedef typename std::list<std::pair<const KeyType, ValueType> >::iterator iterator;
     typedef typename std::list<std::pair<const KeyType, ValueType> >::const_iterator const_iterator;
 
-private:
+  private:
     Hash hasher;
     std::list<std::pair<const KeyType, ValueType> > content;
     size_t capacity;
     std::vector<std::list<iterator> > table;
     size_t sz;
 
+    //Doubles the capacity and rebuilds the table.
     void expand() {
         table.clear();
         capacity *= 2;
@@ -27,6 +37,7 @@ private:
         }
     }
 
+    //Adds <Key, Value> pair into the table (use if doesn't have this key), calls expand when needed.
     void add(const std::pair<const KeyType, ValueType>& insertValue) {
         sz++;
         int hash = hasher(insertValue.first) % capacity;
@@ -38,13 +49,15 @@ private:
         table[hash].push_back(content.begin());
     }
 
-public:
+  public:
+    //Default constructor.
     HashMap(const Hash& _hasher = Hash()):
         hasher(_hasher),
         capacity(1),
         table(1),
         sz(0) {}
 
+    //Iterator constructor.
     template<class inputIterator> HashMap(const inputIterator inputBegin,
                                           const inputIterator inputEnd,
                                           const Hash& _hasher = Hash()):
@@ -71,6 +84,7 @@ public:
             }
         }
 
+    //Initializer list constructor.
     HashMap(const std::initializer_list<std::pair<const KeyType, ValueType> >& input,
             const Hash& _hasher = Hash()):
             hasher(_hasher),
@@ -96,6 +110,7 @@ public:
         }
     }
 
+    //Copy constructor.
     HashMap(const HashMap<KeyType, ValueType, Hash>& other):
         hasher(other.hash_function()),
         content(other.content),
@@ -112,6 +127,7 @@ public:
             }
     }
 
+    //Assign operator.
     HashMap<KeyType, ValueType, Hash>& operator = (const HashMap<KeyType, ValueType, Hash>& other) {
         size_t other_size = other.size();
         size_t my_size = size();
@@ -136,19 +152,22 @@ public:
         return (*this);
     }
 
-
+    //Returns size.
     size_t size() const {
         return sz;
     }
 
+    //Returns true if size is 0.
     bool empty() const {
         return content.empty();
     }
 
+    //Returns hasher.
     Hash hash_function() const {
         return hasher;
     }
 
+    //Inserts new <Key, Value> pair. Checks if table already already has this key.
     void insert(const std::pair<const KeyType, ValueType>& insertValue) {
         int hash = hasher(insertValue.first) % capacity;
         bool flag = false;
@@ -163,6 +182,7 @@ public:
         add(insertValue);
     }
 
+    //Erases pair with given key from the table.
     void erase(const KeyType& key) {
         int hash = hasher(key) % capacity;
         for (auto it = table[hash].begin(); it != table[hash].end(); ++it) {
@@ -175,6 +195,7 @@ public:
         }
     }
 
+    //These are iterators, same as std::vector.
     iterator begin() {
         return content.begin();
     }
@@ -199,6 +220,7 @@ public:
         return content.cend();
     }
 
+    //Give an iterator to <Key, Value> pair with give key. If fails returns end().
     iterator find(const KeyType& key) {
         int hash = hasher(key) % capacity;
         for (auto it : table[hash]) {
@@ -208,6 +230,7 @@ public:
         return end();
     }
 
+    //Same, but const iterator.
     const_iterator find(const KeyType& key) const {
         int hash = hasher(key) % capacity;
         for (auto it : table[hash]) {
@@ -219,6 +242,7 @@ public:
         return cend();
     }
 
+    //Operator [], allows to edit hashMap[key] value.
     ValueType& operator [] (const KeyType& key) {
         auto it = find(key);
         if (it == end()) {
@@ -228,6 +252,7 @@ public:
         return it->second;
     }
 
+    //Get value for given key, readonly.
     const ValueType& at(const KeyType& key) const {
         auto it = find(key);
         if (it == cend()) {
@@ -236,6 +261,7 @@ public:
         return it->second;
     }
 
+    //Clears the table.
     void clear() {
         for (auto it = begin(); it != end(); ++it) {
             int hash = hasher(it->first) % capacity;
