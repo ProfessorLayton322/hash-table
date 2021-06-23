@@ -10,7 +10,8 @@
 Hash table.
 Using chain method.
 It doubles the table size if needed to expand.
-Check https://pastebin.com/esx8ckYw for more.
+Iteration through map is linear because it has a linked list where all <Key, Value> pairs are stored. It takes O(1) to remove something from a linked list.
+See more: https://en.wikipedia.org/wiki/Hash_table#Separate_chaining_with_linked_lists
 */
 
 
