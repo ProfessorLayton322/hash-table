@@ -250,26 +250,25 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     std::vector<std::list<iterator> > _table;
     size_t _sz;
 
-    //Doubles the capacity and rebuilds the _table.
-    void expand() {
-        _table.clear();
-        _capacity *= capacityInflation;
-        _table.resize(_capacity);
-        for (auto it = begin(); it != end(); ++it) {
-            size_t hash = _hasher(it->first) % _capacity;
-            _table[hash].push_back(it);
+    //Doubles the capacity and rebuilds the table if size reached capacity
+    void checkExpansion() {
+        if (size() == _capacity) {
+            _table.clear();
+            _capacity *= capacityInflation;
+            _table.resize(_capacity);
+            for (auto it = begin(); it != end(); ++it) {
+                size_t hash = _hasher(it->first) % _capacity;
+                _table[hash].push_back(it);
+            }
         }
     }
 
     //Adds <Key, Value> pair into the table (use if doesn't have this key), calls expand when needed.
     void add(const std::pair<const KeyType, ValueType>& insertValue) {
         _sz++;
-        size_t hash = _hasher(insertValue.first) % _capacity;
-        if (size() == _capacity) {
-            expand();
-            hash = _hasher(insertValue.first) % _capacity;
-        }
+        size_t hash = _hasher(insertValue.first);
+        checkExpansion();
         _content.push_front(insertValue);
-        _table[hash].push_back(_content.begin());
+        _table[hash % _capacity].push_back(_content.begin());
     }
 };
