@@ -45,8 +45,9 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                         flag = true;
                         break;
                     }
-                if (flag)
+                if (flag) {
                     continue;
+                }
                 _sz++;
                 checkExpansion();
                 _content.push_front(*it);
@@ -113,8 +114,9 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
         for (size_t i = 0; i < my_size; i++)
             _content.pop_front();
         _capacity = size();
-        if (_capacity == 0)
+        if (_capacity == 0) {
             _capacity = 1;
+        }
         _table.clear();
         _table.resize(_capacity);
         for (auto it = _content.begin(); it != _content.end(); ++it) {
@@ -150,8 +152,9 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                 break;
             }
         }
-        if (flag)
+        if (flag) {
             return;
+        }
         add(insertValue);
     }
 
@@ -197,8 +200,9 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     iterator find(const KeyType& key) {
         size_t hash = _hasher(key) % _capacity;
         for (auto it : _table[hash]) {
-            if (it->first == key)
+            if (it->first == key) {
                 return it;
+            }
         }
         return end();
     }
