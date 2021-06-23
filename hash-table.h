@@ -61,23 +61,23 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
             _capacity(input.size() * capacityInflation),
             _table(_capacity),
             _sz(0) {
-            if (input.begin() == input.end()) {
-                _capacity = 1;
-                _table.resize(1);
-                return;
-            }
-        for (auto it = input.begin(); it != input.end(); ++it) {
-            size_t hash = _hasher(it->first) % _capacity;
-            bool flag = false;
-            for (iterator contentIt : _table[hash])
-                if (contentIt->first == it->first)
-                    flag = true;
-            if (flag)
-                continue;
-            _sz++;
-            _content.push_front(*it);
-            _table[hash].push_back(_content.begin());
-        }
+                if (input.begin() == input.end()) {
+                    _capacity = 1;
+                    _table.resize(1);
+                    return;
+                }
+                for (auto it = input.begin(); it != input.end(); ++it) {
+                    size_t hash = _hasher(it->first) % _capacity;
+                    bool flag = false;
+                    for (iterator contentIt : _table[hash])
+                        if (contentIt->first == it->first)
+                            flag = true;
+                    if (flag)
+                        continue;
+                    _sz++;
+                    _content.push_front(*it);
+                    _table[hash].push_back(_content.begin());
+                }
     }
 
     //Copy constructor.
