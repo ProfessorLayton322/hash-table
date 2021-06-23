@@ -20,6 +20,8 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     typedef typename std::list<std::pair<const KeyType, ValueType> >::iterator iterator;
     typedef typename std::list<std::pair<const KeyType, ValueType> >::const_iterator const_iterator;
 
+    static constexpr size_t capacityInflation = 2;
+
     //Default constructor.
     HashMap(const Hash& _hasher = Hash()):
         _hasher(_hasher),
@@ -251,7 +253,7 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     //Doubles the capacity and rebuilds the _table.
     void expand() {
         _table.clear();
-        _capacity *= 2;
+        _capacity *= capacityInflation;
         _table.resize(_capacity);
         for (auto it = begin(); it != end(); ++it) {
             size_t hash = _hasher(it->first) % _capacity;
