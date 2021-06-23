@@ -66,17 +66,20 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                     _table.resize(1);
                     return;
                 }
-                for (auto it = input.begin(); it != input.end(); ++it) {
-                    size_t hash = _hasher(it->first) % _capacity;
+                for (auto it : input) {
+                    size_t hash = _hasher(it.first);
                     bool flag = false;
-                    for (iterator contentIt : _table[hash])
-                        if (contentIt->first == it->first)
+                    for (iterator contentIt : _table[hash % _capacity])
+                        if (contentIt->first == it.first) {
                             flag = true;
-                    if (flag)
+                            break;
+                        }
+                    if (flag) {
                         continue;
+                    }
                     _sz++;
-                    _content.push_front(*it);
-                    _table[hash].push_back(_content.begin());
+                    _content.push_front(it);
+                    _table[hash % _capacity].push_back(_content.begin());
                 }
     }
 
