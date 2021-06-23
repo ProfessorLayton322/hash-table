@@ -19,111 +19,80 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     typedef typename std::list<std::pair<const KeyType, ValueType> >::iterator iterator;
     typedef typename std::list<std::pair<const KeyType, ValueType> >::const_iterator const_iterator;
 
-  private:
-    Hash hasher;
-    std::list<std::pair<const KeyType, ValueType> > content;
-    size_t capacity;
-    std::vector<std::list<iterator> > table;
-    size_t sz;
-
-    //Doubles the capacity and rebuilds the table.
-    void expand() {
-        table.clear();
-        capacity *= 2;
-        table.resize(capacity);
-        for (auto it = begin(); it != end(); ++it) {
-            int hash = hasher(it->first) % capacity;
-            table[hash].push_back(it);
-        }
-    }
-
-    //Adds <Key, Value> pair into the table (use if doesn't have this key), calls expand when needed.
-    void add(const std::pair<const KeyType, ValueType>& insertValue) {
-        sz++;
-        int hash = hasher(insertValue.first) % capacity;
-        if (size() == capacity) {
-            expand();
-            hash = hasher(insertValue.first) % capacity;
-        }
-        content.push_front(insertValue);
-        table[hash].push_back(content.begin());
-    }
-
-  public:
     //Default constructor.
     HashMap(const Hash& _hasher = Hash()):
-        hasher(_hasher),
-        capacity(1),
-        table(1),
-        sz(0) {}
+        _hasher(_hasher),
+        _capacity(1),
+        _table(1),
+        _sz(0) {}
 
     //Iterator constructor.
     template<class inputIterator> HashMap(const inputIterator inputBegin,
                                           const inputIterator inputEnd,
                                           const Hash& _hasher = Hash()):
-        hasher(_hasher),
-        capacity(std::distance(inputBegin, inputEnd)),
-        table(std::distance(inputBegin, inputEnd)),
-        sz(0) {
-            if (capacity == 0) {
-                capacity = 1;
-                table.resize(capacity);
+        _hasher(_hasher),
+        _capacity(std::distance(inputBegin, inputEnd)),
+        _table(std::distance(inputBegin, inputEnd)),
+        _sz(0) {
+            if (_capacity == 0) {
+                _capacity = 1;
+                _table.resize(_capacity);
                 return;
             }
             for (auto it = inputBegin; it != inputEnd; ++it) {
-                int hash = hasher(it->first) % capacity;
+                size_t hash = _hasher(it->first) % _capacity;
                 bool flag = false;
-                for (iterator contentIt : table[hash])
+                for (iterator contentIt : _table[hash])
                     if (contentIt->first == it->first)
                         flag = true;
                 if (flag)
                     continue;
-                content.push_front(*it);
-                table[hash].push_back(content.begin());
-                sz++;
+                _content.push_front(*it);
+                _table[hash].push_back(_content.begin());
+                _sz++;
             }
         }
 
     //Initializer list constructor.
     HashMap(const std::initializer_list<std::pair<const KeyType, ValueType> >& input,
             const Hash& _hasher = Hash()):
-            hasher(_hasher),
-            capacity(input.size()),
-            table(input.size()),
-            sz(0) {
+            _hasher(_hasher),
+            _capacity(input.size()),
+            _table(input.size()),
+            _sz(0) {
             if (input.begin() == input.end()) {
-                capacity = 1;
-                table.resize(1);
+                _capacity = 1;
+                _table.resize(1);
                 return;
             }
         for (auto it = input.begin(); it != input.end(); ++it) {
-            int hash = hasher(it->first) % capacity;
+            size_t hash = _hasher(it->first) % _capacity;
             bool flag = false;
-            for (iterator contentIt : table[hash])
+            for (iterator contentIt : _table[hash])
                 if (contentIt->first == it->first)
                     flag = true;
             if (flag)
                 continue;
-            sz++;
-            content.push_front(*it);
-            table[hash].push_back(content.begin());
+            _sz++;
+            _content.push_front(*it);
+            _table[hash].push_back(_content.begin());
         }
     }
 
     //Copy constructor.
     HashMap(const HashMap<KeyType, ValueType, Hash>& other):
-        hasher(other.hash_function()),
-        content(other.content),
-        capacity(other.size()),
-        table(other.size()),
-        sz(other.size()) {
-            if (capacity == 0) {
-                capacity = 1;
-                table.resize(capacity);
+        _hasher(other.hash_function()),
+        _content(other._content),
+        _capacity(other.size()),
+        _table(other.size()),
+        _sz(other.size()) {
+            if (_capacity == 0) {
+                _capacity = 1;
+                _table.resize(_capacity);
             }
-            for (auto it = content.begin(); it != content.end(); ++it) {
-                int hash = hasher(it->first) % capacity;
-                table[hash].push_back(it);
+            for (auto it = _content.begin(); it != _content.end(); ++it) {
+                size_t hash = _hasher(it->first) % _capacity;
+                _table[hash].push_back(it);
             }
     }
 
@@ -134,44 +103,44 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
         auto _it = other.begin();
         for (size_t i = 0; i < other_size; i++) {
             std::pair<const KeyType, ValueType> currentPair(*_it);
-            content.push_back(currentPair);
+            _content.push_back(currentPair);
             _it++;
         }
         for (size_t i = 0; i < my_size; i++)
-            content.pop_front();
-        capacity = size();
-        if (capacity == 0)
-            capacity = 1;
-        table.clear();
-        table.resize(capacity);
-        for (auto it = content.begin(); it != content.end(); ++it) {
-            int hash = hasher(it->first) % capacity;
-            table[hash].push_back(it);
+            _content.pop_front();
+        _capacity = size();
+        if (_capacity == 0)
+            _capacity = 1;
+        _table.clear();
+        _table.resize(_capacity);
+        for (auto it = _content.begin(); it != _content.end(); ++it) {
+            size_t hash = _hasher(it->first) % _capacity;
+            _table[hash].push_back(it);
         }
-        sz = other_size;
+        _sz = other_size;
         return (*this);
     }
 
     //Returns size.
     size_t size() const {
-        return sz;
+        return _sz;
     }
 
     //Returns true if size is 0.
     bool empty() const {
-        return content.empty();
+        return _content.empty();
     }
 
     //Returns hasher.
     Hash hash_function() const {
-        return hasher;
+        return _hasher;
     }
 
     //Inserts new <Key, Value> pair. Checks if table already already has this key.
     void insert(const std::pair<const KeyType, ValueType>& insertValue) {
-        int hash = hasher(insertValue.first) % capacity;
+        size_t hash = _hasher(insertValue.first) % _capacity;
         bool flag = false;
-        for (auto it : table[hash]) {
+        for (auto it : _table[hash]) {
             if (it->first == insertValue.first) {
                 flag = true;
                 break;
@@ -184,12 +153,12 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
 
     //Erases pair with given key from the table.
     void erase(const KeyType& key) {
-        int hash = hasher(key) % capacity;
-        for (auto it = table[hash].begin(); it != table[hash].end(); ++it) {
+        size_t hash = _hasher(key) % _capacity;
+        for (auto it = _table[hash].begin(); it != _table[hash].end(); ++it) {
             if ((*it)->first == key) {
-                content.erase(*it);
-                table[hash].erase(it);
-                sz--;
+                _content.erase(*it);
+                _table[hash].erase(it);
+                _sz--;
                 break;
             }
         }
@@ -197,11 +166,11 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
 
     //These are iterators, same as std::vector.
     iterator begin() {
-        return content.begin();
+        return _content.begin();
     }
 
     iterator end() {
-        return content.end();
+        return _content.end();
     }
 
     const_iterator begin() const {
@@ -213,17 +182,17 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     }
 
     const_iterator cbegin() const {
-        return content.cbegin();
+        return _content.cbegin();
     }
 
     const_iterator cend() const {
-        return content.cend();
+        return _content.cend();
     }
 
     //Give an iterator to <Key, Value> pair with give key. If fails returns end().
     iterator find(const KeyType& key) {
-        int hash = hasher(key) % capacity;
-        for (auto it : table[hash]) {
+        size_t hash = _hasher(key) % _capacity;
+        for (auto it : _table[hash]) {
             if (it->first == key)
                 return it;
         }
@@ -232,8 +201,8 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
 
     //Same, but const iterator.
     const_iterator find(const KeyType& key) const {
-        int hash = hasher(key) % capacity;
-        for (auto it : table[hash]) {
+        size_t hash = _hasher(key) % _capacity;
+        for (auto it : _table[hash]) {
             if (it->first == key) {
                 const_iterator returnItem = it;
                 return returnItem;
@@ -264,10 +233,40 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     //Clears the table.
     void clear() {
         for (auto it = begin(); it != end(); ++it) {
-            int hash = hasher(it->first) % capacity;
-            table[hash].clear();
+            size_t hash = _hasher(it->first) % _capacity;
+            _table[hash].clear();
         }
-        content.clear();
-        sz = 0;
+        _content.clear();
+        _sz = 0;
+    }
+
+  private:
+    Hash _hasher;
+    std::list<std::pair<const KeyType, ValueType> > _content;
+    size_t _capacity;
+    std::vector<std::list<iterator> > _table;
+    size_t _sz;
+
+    //Doubles the capacity and rebuilds the _table.
+    void expand() {
+        _table.clear();
+        _capacity *= 2;
+        _table.resize(_capacity);
+        for (auto it = begin(); it != end(); ++it) {
+            size_t hash = _hasher(it->first) % _capacity;
+            _table[hash].push_back(it);
+        }
+    }
+
+    //Adds <Key, Value> pair into the table (use if doesn't have this key), calls expand when needed.
+    void add(const std::pair<const KeyType, ValueType>& insertValue) {
+        _sz++;
+        size_t hash = _hasher(insertValue.first) % _capacity;
+        if (size() == _capacity) {
+            expand();
+            hash = _hasher(insertValue.first) % _capacity;
+        }
+        _content.push_front(insertValue);
+        _table[hash].push_back(_content.begin());
     }
 };
