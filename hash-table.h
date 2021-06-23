@@ -40,7 +40,7 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
             for (auto it = inputBegin; it != inputEnd; ++it) {
                 size_t hash = _hasher(it->first);
                 bool flag = false;
-                for (iterator contentIt : _table[hash % _capacity])
+                for (const_iterator contentIt : _table[hash % _capacity])
                     if (contentIt->first == it->first) {
                         flag = true;
                         break;
@@ -70,7 +70,7 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                 for (auto it : input) {
                     size_t hash = _hasher(it.first);
                     bool flag = false;
-                    for (iterator contentIt : _table[hash % _capacity])
+                    for (const_iterator contentIt : _table[hash % _capacity])
                         if (contentIt->first == it.first) {
                             flag = true;
                             break;
