@@ -49,9 +49,9 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                     continue;
                 }
                 _sz++;
-                checkExpansion();
                 _content.push_front(*it);
                 _table[hash % _capacity].push_back(_content.begin());
+                checkExpansion();
             }
         }
 
@@ -272,8 +272,8 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     void add(const std::pair<const KeyType, ValueType>& insertValue) {
         _sz++;
         size_t hash = _hasher(insertValue.first);
-        checkExpansion();
         _content.push_front(insertValue);
         _table[hash % _capacity].push_back(_content.begin());
+        checkExpansion();
     }
 };
