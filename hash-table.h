@@ -111,9 +111,10 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
             _content.push_back(currentPair);
             _it++;
         }
-        for (size_t i = 0; i < my_size; i++)
+        for (size_t i = 0; i < my_size; i++) {
             _content.pop_front();
-        _capacity = size();
+        }
+        _capacity = size() * capacityInflation;
         if (_capacity == 0) {
             _capacity = 1;
         }
@@ -249,7 +250,7 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
 
     //Doubles the capacity and rebuilds the table if size reached capacity
     void checkExpansion() {
-        if (size() == _capacity) {
+        if (size() >= _capacity) {
             _table.clear();
             _capacity *= capacityInflation;
             _table.resize(_capacity);
