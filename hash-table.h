@@ -34,25 +34,23 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                                           const inputIterator inputEnd,
                                           const Hash& _hasher = Hash()):
         _hasher(_hasher),
-        _capacity(std::distance(inputBegin, inputEnd)),
-        _table(std::distance(inputBegin, inputEnd)),
+        _capacity(1),
+        _table(1),
         _sz(0) {
-            if (_capacity == 0) {
-                _capacity = 1;
-                _table.resize(_capacity);
-                return;
-            }
             for (auto it = inputBegin; it != inputEnd; ++it) {
-                size_t hash = _hasher(it->first) % _capacity;
+                size_t hash = _hasher(it->first);
                 bool flag = false;
-                for (iterator contentIt : _table[hash])
-                    if (contentIt->first == it->first)
+                for (iterator contentIt : _table[hash % _capacity])
+                    if (contentIt->first == it->first) {
                         flag = true;
+                        break;
+                    }
                 if (flag)
                     continue;
-                _content.push_front(*it);
-                _table[hash].push_back(_content.begin());
                 _sz++;
+                checkExpansion();
+                _content.push_front(*it);
+                _table[hash % _capacity].push_back(_content.begin());
             }
         }
 
