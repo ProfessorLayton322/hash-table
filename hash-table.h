@@ -58,8 +58,8 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     HashMap(const std::initializer_list<std::pair<const KeyType, ValueType> >& input,
             const Hash& _hasher = Hash()):
             _hasher(_hasher),
-            _capacity(input.size()),
-            _table(input.size()),
+            _capacity(input.size() * capacityInflation),
+            _table(_capacity),
             _sz(0) {
             if (input.begin() == input.end()) {
                 _capacity = 1;
@@ -84,8 +84,8 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
     HashMap(const HashMap<KeyType, ValueType, Hash>& other):
         _hasher(other.hash_function()),
         _content(other._content),
-        _capacity(other.size()),
-        _table(other.size()),
+        _capacity(other.size() * capacityInflation),
+        _table(_capacity),
         _sz(other.size()) {
             if (_capacity == 0) {
                 _capacity = 1;
