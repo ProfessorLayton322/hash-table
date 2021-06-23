@@ -144,15 +144,7 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
 
     //Inserts new <Key, Value> pair. Checks if table already already has this key.
     void insert(const std::pair<const KeyType, ValueType>& insertValue) {
-        size_t hash = _hasher(insertValue.first) % _capacity;
-        bool flag = false;
-        for (auto it : _table[hash]) {
-            if (it->first == insertValue.first) {
-                flag = true;
-                break;
-            }
-        }
-        if (flag) {
+        if (find(insertValue.first) != end()) {
             return;
         }
         add(insertValue);
