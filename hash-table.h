@@ -95,37 +95,25 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
                 _capacity = 1;
                 _table.resize(_capacity);
             }
-            for (auto it = _content.begin(); it != _content.end(); ++it) {
-                size_t hash = _hasher(it->first) % _capacity;
-                _table[hash].push_back(it);
-            }
+            fillTable();
     }
 
     //Assign operator.
     HashMap<KeyType, ValueType, Hash>& operator = (const HashMap<KeyType, ValueType, Hash>& other) {
-        size_t other_size = other.size();
-        size_t my_size = size();
-        auto _it = other.begin();
-        for (size_t i = 0; i < other_size; i++) {
-            std::pair<const KeyType, ValueType> currentPair(*_it);
-            _content.push_back(currentPair);
-            _it++;
+        if (this == &other) {
+            //Self assign should never be completed.
+            return *this;
         }
-        for (size_t i = 0; i < my_size; i++) {
-            _content.pop_front();
+        clear();
+        _content = std::list<std::pair<const KeyType, ValueType> >(other.begin(), other.end());
+        //We can't use assign operator to copy the content from other because of const KeyType. So we use move assign from an rvalue.
+        _sz = other.size();
+        if (_capacity < other.size() * capacityInflation) {
+            _capacity = other.size() * capacityInflation;
+            _table.resize(_capacity);
         }
-        _capacity = size() * capacityInflation;
-        if (_capacity == 0) {
-            _capacity = 1;
-        }
-        _table.clear();
-        _table.resize(_capacity);
-        for (auto it = _content.begin(); it != _content.end(); ++it) {
-            size_t hash = _hasher(it->first) % _capacity;
-            _table[hash].push_back(it);
-        }
-        _sz = other_size;
-        return (*this);
+        fillTable();
+        return *this;
     }
 
     //Returns size.
@@ -254,10 +242,7 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
             _table.clear();
             _capacity *= capacityInflation;
             _table.resize(_capacity);
-            for (auto it = begin(); it != end(); ++it) {
-                size_t hash = _hasher(it->first) % _capacity;
-                _table[hash].push_back(it);
-            }
+            fillTable();
         }
     }
 
@@ -268,5 +253,13 @@ template<class KeyType, class ValueType, class Hash = std::hash<KeyType> > class
         _content.push_front(insertValue);
         _table[hash % _capacity].push_back(_content.begin());
         checkExpansion();
+    }
+
+    //Fills table with content iterators according to hashes of keys assuming that table is empty and content is already filled.
+    void fillTable() {
+        for (auto it = _content.begin(); it != _content.end(); ++it) {
+            size_t hash = _hasher(it->first) % _capacity;
+            _table[hash].push_back(it);
+        }
     }
 };
